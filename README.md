@@ -15,6 +15,9 @@ Install the required Python packages using the following command:
 
   pip install -r requirements.txt
 
+download chromedriver for your chrome version and add to same folder .py file is in
+
+
 ## Usage
 
 1. Clone the repository or download the script.
