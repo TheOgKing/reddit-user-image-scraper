@@ -1,3 +1,4 @@
+import re
 import os
 import time
 import requests
@@ -39,6 +40,11 @@ def fetch_user_posts(username):
     
     return images
 
+# Function to sanitize filenames by removing invalid characters
+def sanitize_filename(filename):
+    # Remove any characters that are not alphanumeric or a few common symbols
+    return re.sub(r'[\\/*?:"<>|]', "_", filename)
+
 # Download images and zip them, with progress display and checkpointing
 def download_images(images, folder_name, start_index, num_to_download, checkpoint_data):
     if not os.path.exists(folder_name):
@@ -50,14 +56,18 @@ def download_images(images, folder_name, start_index, num_to_download, checkpoin
     for i in range(start_index, start_index + num_to_download):
         image_url = images[i]
         img_data = requests.get(image_url).content
-        filename = os.path.join(folder_name, f'image_{i+1}.{image_url.split(".")[-1]}')
+        
+        # Generate a safe filename by sanitizing the URL and avoiding invalid characters
+        image_name = sanitize_filename(f'image_{i+1}.{image_url.split(".")[-1]}')
+        filename = os.path.join(folder_name, image_name)
+        
+        # Save the image
         with open(filename, 'wb') as handler:
             handler.write(img_data)
 
         # Update checkpoint data after each image download
-        if checkpoint_data is not None:
-            checkpoint_data['current_image_index'] = i + 1
-            save_checkpoint(checkpoint_data)
+        checkpoint_data['current_image_index'] = i + 1
+        save_checkpoint(checkpoint_data)
 
         # Display download progress
         print(f'Downloading {i+1}/{num_to_download} images', end='\r')
